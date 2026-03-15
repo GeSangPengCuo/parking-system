@@ -30,7 +30,6 @@ parking-system/
 
 ### 前端运行
 直接打开frontend/index.html，浏览器中即可测试入场/离场/查询功能。
-## 🚀 启动方式
 
 ---
 
