@@ -9,10 +9,28 @@
 
 ---
 
-## 🧩 项目架构
-├── backend/ # Java 后端（Maven 工程）
-├── frontend/ # 纯前端网页（HTML + CSS + JS）
-└── README.md
+## 📁 项目目录结构
+parking-system/
+├── backend/ # 后端 Java + Maven 工程
+│ ├── pom.xml # Maven 依赖 / 打包配置
+│ └── src/ # Java 源代码（停车场核心逻辑）
+├── frontend/ # 前端纯静态页面
+│ ├── index.html # 页面结构
+│ ├── app.js # 前端交互逻辑
+│ └── style.css # 页面样式
+├── .gitignore # Git 忽略规则
+└── README.md # 项目说明
+
+## 🔧 本地运行说明
+### 后端运行（Java + Maven）
+1. 进入backend目录：`cd backend`
+2. 编译代码：`mvn clean compile`
+3. 打包成可执行JAR：`mvn clean package`
+4. 运行JAR：`java -jar target/xxx.jar`（xxx替换为实际JAR文件名）
+
+### 前端运行
+直接打开frontend/index.html，浏览器中即可测试入场/离场/查询功能。
+## 🚀 启动方式
 
 ---
 

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>停车场管理系统</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .color-option { display: inline-block; padding: 4px 8px; margin: 2px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+        .color-option.active { background: #007bff; color: white; border-color: #007bff; }
+        .plate-tip { font-size: 12px; margin-top: 2px; }
+        .plate-tip.success { color: green; }
+        .plate-tip.error { color: red; }
+        .message { margin: 4px 0; padding: 4px; border-left: 3px solid #ccc; }
+        .message.success { border-color: green; }
+        .message.error { border-color: red; }
+        .message.info { border-color: blue; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="app-header">
+            <h1>停车场管理系统</h1>
+            <p>初始化车位后，可在页面中完成入场、离场、查询等操作。</p>
+        </header>
+
+        <div class="grid">
+            <section class="card">
+                <h2>① 初始化停车场</h2>
+                <div class="form-row">
+                    <label for="capacity-input">车位总数</label>
+                    <input type="number" id="capacity-input" placeholder="请输入车位总数，例如 20">
+                </div>
+                <div class="form-row">
+                    <label for="price-input">每小时收费（元）</label>
+                    <input type="number" id="price-input" placeholder="例如 5 或 5.5" step="0.1">
+                </div>
+                <button id="init-btn" class="btn primary">初始化</button>
+                <p class="hint">说明：只需初始化一次，如需重新设置，可刷新页面或再次输入后点击初始化。</p>
+            </section>
+
+            <section class="card">
+                <h2>② 车辆入场</h2>
+                <div class="form-row">
+                    <label for="enter-plate-input">车牌号（严格校验）</label>
+                    <input type="text" id="enter-plate-input" placeholder="如 浙A12345、粤B12345">
+                    <div id="enter-plate-input-tip" class="plate-tip"></div>
+                </div>
+                <div class="form-row">
+                    <label for="enter-color-input">车辆颜色</label>
+                    <input type="text" id="enter-color-input" placeholder="如：白、黑、银灰等">
+                </div>
+                <div class="form-row">
+                    <span>快速选择颜色：</span>
+                    <div>
+                        <span class="color-option" data-color="红">红</span>
+                        <span class="color-option" data-color="黄">黄</span>
+                        <span class="color-option" data-color="蓝">蓝</span>
+                        <span class="color-option" data-color="白">白</span>
+                        <span class="color-option" data-color="黑">黑</span>
+                        <span class="color-option" data-color="银">银</span>
+                        <span class="color-option" data-color="灰">灰</span>
+                    </div>
+                </div>
+                <button id="enter-btn" class="btn success">入场</button>
+                <p class="hint">提示：同一车牌不可重复入场，车牌格式将根据中国大陆车牌规则进行校验。</p>
+            </section>
+        </div>
+
+        <div class="grid">
+            <section class="card">
+                <h2>③ 车辆离场并结算</h2>
+                <div class="form-row">
+                    <label for="leave-plate-input">车牌号（需完整匹配）</label>
+                    <input type="text" id="leave-plate-input" placeholder="请输入完整车牌号，如 浙A12345">
+                    <div id="leave-plate-input-tip" class="plate-tip">必须输入完整车牌号才能精确结算，避免误操作。</div>
+                </div>
+                <button id="leave-btn" class="btn danger">离场并结算</button>
+                <p class="hint">说明：离场会按照停放时长自动计算停车费，最少按 1 小时计费。</p>
+            </section>
+
+            <section class="card">
+                <h2>④ 按车牌查询车辆</h2>
+                <div class="form-row">
+                    <label for="search-plate-input">车牌号（需完整匹配）</label>
+                    <input type="text" id="search-plate-input" placeholder="请输入完整车牌号，如 浙A12345">
+                    <div id="search-plate-input-tip" class="plate-tip">请输入完整车牌号进行精确查询。</div>
+                </div>
+                <button id="search-btn" class="btn">查询车辆</button>
+                <p class="hint">提示：查询结果会在下方「消息提示」区域展示。</p>
+            </section>
+        </div>
+
+        <section class="card">
+            <h2>系统消息提示</h2>
+            <div id="messages" class="messages"></div>
+        </section>
+
+        <section class="card">
+            <h2>车位实时状态</h2>
+            <div id="status-summary" class="status-summary"></div>
+            <div class="table-wrapper">
+                <table id="status-table">
+                    <thead>
+                        <tr>
+                            <th>车位号</th>
+                            <th>状态</th>
+                            <th>车牌</th>
+                            <th>颜色</th>
+                            <th>入场时间</th>
+                            <th>已停时长</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -82,6 +82,16 @@ class ParkingLot {
         return spots.stream().anyMatch(ParkingSpot::isFree);
     }
 
+    // 新增：判断车牌是否已入场
+    public boolean isPlateParked(String plateNumber) {
+        if (plateNumber == null || plateNumber.trim().isEmpty()) {
+            return false;
+        }
+        return spots.stream()
+                .filter(spot -> !spot.isFree())
+                .anyMatch(spot -> spot.getCar().getPlateNumber().equalsIgnoreCase(plateNumber.trim()));
+    }
+
     public ParkingSpot park(Car car) {
         for (ParkingSpot spot : spots) {
             if (spot.isFree()) {
@@ -93,8 +103,13 @@ class ParkingLot {
     }
 
     public double leave(String plateNumber) {
+        // 新增：先校验车牌是否为空
+        if (plateNumber == null || plateNumber.trim().isEmpty()) {
+            return -1;
+        }
+        // 遍历查找车辆
         for (ParkingSpot spot : spots) {
-            if (!spot.isFree() && spot.getCar().getPlateNumber().equalsIgnoreCase(plateNumber)) {
+            if (!spot.isFree() && spot.getCar().getPlateNumber().equalsIgnoreCase(plateNumber.trim())) {
                 LocalDateTime endTime = LocalDateTime.now();
                 LocalDateTime startTime = spot.getStartTime();
                 long minutes = java.time.Duration.between(startTime, endTime).toMinutes();
@@ -104,7 +119,7 @@ class ParkingLot {
                 return fee;
             }
         }
-        return -1;
+        return -1; // 未找到车辆返回-1
     }
 
     public void printStatus() {
@@ -127,8 +142,12 @@ class ParkingLot {
     }
 
     public void findByPlate(String plateNumber) {
+        if (plateNumber == null || plateNumber.trim().isEmpty()) {
+            System.out.println("错误：车牌不能为空！");
+            return;
+        }
         for (ParkingSpot spot : spots) {
-            if (!spot.isFree() && spot.getCar().getPlateNumber().equalsIgnoreCase(plateNumber)) {
+            if (!spot.isFree() && spot.getCar().getPlateNumber().equalsIgnoreCase(plateNumber.trim())) {
                 System.out.printf("车牌 %s 在车位 %d%n", plateNumber, spot.getNumber());
                 return;
             }
@@ -173,6 +192,19 @@ public class ParkingLotApp {
         }
     }
 
+    // 新增：通用非空输入校验方法
+    private static String readNonEmptyString(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String line = scanner.nextLine().trim();
+            if (line.isEmpty()) {
+                System.out.println("错误：输入不能为空！");
+            } else {
+                return line;
+            }
+        }
+    }
+
     private static void printMenu() {
         System.out.println();
         System.out.println("===== 停车场管理系统 =====");
@@ -200,36 +232,45 @@ public class ParkingLotApp {
             switch (choice) {
                 case 1 -> {
                     if (!parkingLot.hasFreeSpot()) {
-                        System.out.println("停车场已满，无法继续停车！");
+                        System.out.println("错误：停车场已满，无法继续停车！");
                         break;
                     }
-                    System.out.print("请输入车牌号：");
-                    String plate = scanner.nextLine().trim();
-                    System.out.print("请输入车辆颜色：");
-                    String color = scanner.nextLine().trim();
+                    // 1. 非空校验车牌号
+                    String plate = readNonEmptyString(scanner, "请输入车牌号：");
+                    // 2. 新增：重复车牌校验
+                    if (parkingLot.isPlateParked(plate)) {
+                        System.out.println("错误：车牌" + plate + "已入场，无法重复停车！");
+                        break;
+                    }
+                    // 非空校验车辆颜色
+                    String color = readNonEmptyString(scanner, "请输入车辆颜色：");
 
                     Car car = new Car(plate, color);
                     ParkingSpot spot = parkingLot.park(car);
                     if (spot != null) {
-                        System.out.printf("停车成功，您的车位号为：%d%n", spot.getNumber());
+                        System.out.printf("成功：车牌%s入场成功，您的车位号为：%d%n", plate, spot.getNumber());
                     } else {
-                        System.out.println("停车失败，没有可用车位。");
+                        System.out.println("错误：停车失败，没有可用车位。");
                     }
                 }
                 case 2 -> {
-                    System.out.print("请输入要离场车辆的车牌号：");
-                    String plate = scanner.nextLine().trim();
+                    // 1. 非空校验离场车牌号
+                    String plate = readNonEmptyString(scanner, "请输入要离场车辆的车牌号：");
+                    // 2. 新增：未入场车牌校验
+                    if (!parkingLot.isPlateParked(plate)) {
+                        System.out.println("错误：车牌" + plate + "未入场，无法离场！");
+                        break;
+                    }
                     double fee = parkingLot.leave(plate);
                     if (fee < 0) {
-                        System.out.println("未找到该车牌的车辆，离场失败。");
+                        System.out.println("错误：未找到该车牌的车辆，离场失败。");
                     } else {
-                        System.out.printf("离场成功，应支付停车费：%.2f 元%n", fee);
+                        System.out.printf("成功：车牌%s离场，应支付停车费：%.2f 元%n", plate, fee);
                     }
                 }
                 case 3 -> parkingLot.printStatus();
                 case 4 -> {
-                    System.out.print("请输入要查询的车牌号：");
-                    String plate = scanner.nextLine().trim();
+                    String plate = readNonEmptyString(scanner, "请输入要查询的车牌号：");
                     parkingLot.findByPlate(plate);
                 }
                 case 0 -> {
@@ -237,9 +278,8 @@ public class ParkingLotApp {
                     scanner.close();
                     return;
                 }
-                default -> System.out.println("未知选项，请重新选择。");
+                default -> System.out.println("错误：未知选项，请重新选择。");
             }
         }
     }
 }
-
